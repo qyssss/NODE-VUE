@@ -51,4 +51,28 @@ module.exports = app => {
         file.url = `http://localhost:3000/uploads/${file.filename}`
         res.send(file)
     })
+
+    // 用户登录
+    app.post('/admin/api/login', async (req, res) => {
+        // 前端登录用户
+        const { username, password } = req.body;
+        const Admin = require('../../models/Admin')
+        // 找数据库中存的用户
+        const user = await Admin.findOne({
+            username
+        }).select('+password')
+        if (!user) {
+            return res.status(404).send({
+                message: "User not found",
+            })
+        }
+        // 校验密码
+        const bcrypt = require('bcrypt');
+        if (!bcrypt.compareSync(password, user.password)) {
+            return res.status(401).send({
+                message: "Invalid password",
+            });
+        }
+        res.send("success");
+    })
 }
